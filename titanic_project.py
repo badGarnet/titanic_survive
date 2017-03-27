@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def readdata(fname):
+def readdata(fname, tp, vstart):
     train = pd.read_csv(fname)
     """ only use a small subset of features for now"""
     trainlean = train.loc[:, ['Survived', 'Pclass', 'Age', 'Sex', 'SibSp', \
@@ -26,9 +26,8 @@ def readdata(fname):
         trainlean.iloc[:, i] = (trainlean.iloc[:, i] - raw_mean[i]) / raw_std[i]
         
     m = trainlean.shape[0]
-    m = int(0.6 * m)
-    trainset = trainlean.loc[:m, :]
-    vadset = trainlean.loc[m:, :]
+    trainset = trainlean.loc[:int(tp * m), :]
+    vadset = trainlean.loc[int(vstart * m):, :]
     
     return {'train':trainset, 'validation':vadset, 'rawmean':raw_mean, \
             'rawspan':raw_std}
@@ -48,6 +47,46 @@ def embarknum(e):
         return 3
     else:
         return -3
+
+def sigmoid(z):
+    return 1.0 / (1.0 + np.exp(-z))
+
+def lfCost(theta, X, y, regpara):
+    """ logistic cost function
+    input: X, np.array mxn, m data sets, n features
+        y, np.array mx1
+        theta, np.array nx1
+        regpara, float number
+    cost = sum(-ylog(hx) - (1-y)log(1-hx))/2m + 2*regpara*sum(theta^2)/m
+    gradient_j = sum(hx-y)*x_j + regpara*theta/m
+    hx = g(X*theta')
+    """
+    m = X.shape[0]
+    J = - (np.dot(y.T, np.log(sigmoid(np.dot(X, theta)))) + np.dot((1 - y.T), \
+            np.log(1 - sigmoid(np.dot(X, theta))))) / m + 2 * regpara * np.dot( \
+            theta[1:].T, theta[1:]) / m
+    return J
+
+def lfGradient(theta, X, y, regpara):
+    """ logistic cost function
+    input: X, np.array mxn, m data sets, n features
+        y, np.array mx1
+        theta, np.array nx1
+        regpara, float number
+    cost = sum(-ylog(hx) - (1-y)log(1-hx))/2m + 2*regpara*sum(theta^2)/m
+    gradient_j = sum(hx-y)*x_j + regpara*theta/m
+    hx = g(X*theta')
+    """
+    m = X.shape[0]
+    grad = np.dot(X.T, sigmoid(np.dot(X, theta)) - y) / m
+    grad[1:] = grad[1:] + regpara * theta[1:] / m
+    return grad
+
+def lfPredict(theta, X):
+    yp = sigmoid(np.dot(X, theta))
+    yp[yp > 0.5] = 1
+    yp[yp <=0.5] = 0
+    return yp
 
 def main():
     datain = readdata('train.csv')
