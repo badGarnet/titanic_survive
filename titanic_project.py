@@ -19,18 +19,28 @@ def readdata(fname, tp, vstart):
     trainlean.loc[:, 'Embarked'] = trainlean.loc[:, 'Embarked'].apply(embarknum)
     """ drop nan """
     trainlean = trainlean.dropna(how='any')
-    """ normalize the features and save the normalization parameters """
-    raw_mean = trainlean.mean()
-    raw_std = trainlean.std()
-    for i in range(1, trainlean.shape[1]):
-        trainlean.iloc[:, i] = (trainlean.iloc[:, i] - raw_mean[i]) / raw_std[i]
-        
+  
     m = trainlean.shape[0]
     trainset = trainlean.loc[:int(tp * m), :]
     vadset = trainlean.loc[int(vstart * m):, :]
     
-    return {'train':trainset, 'validation':vadset, 'rawmean':raw_mean, \
-            'rawspan':raw_std}
+    return {'train':trainset, 'validation':vadset}
+
+def normdata(a):
+    raw_mean = a.mean()
+    raw_std = a.std()
+    out = a
+    for i in range(1, a.shape[1]):
+        out[:, i] = (a[:, i] - raw_mean[i]) / raw_std[i]
+    return out
+    
+def xquad(X):
+    m, nf = X.shape
+    Xquad = np.zeros(shape = (m, nf**2))
+    for i in range(0, nf):
+        Xquad[:, i * nf : (i+1) * nf] = X * np.dot(X[:, i].reshape(m, 1), \
+              np.ones(shape = (1, nf)))
+    return Xquad    
 
 def gendertonum(g):
     if g == 'male':
