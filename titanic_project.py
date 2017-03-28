@@ -9,34 +9,44 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def readdata(fname, tp, vstart):
+def readdata(fname, tp, vstart, features):
     train = pd.read_csv(fname)
     """ only use a small subset of features for now"""
-    trainlean = train.loc[:, ['Survived', 'Pclass', 'Age', 'Sex', 'SibSp', \
-                       'Parch', 'Fare','Embarked']]
+    trainlean = train.loc[:, features]
     """ digitize string values """
     trainlean.loc[:, 'Sex'] = trainlean.loc[:, 'Sex'].apply(gendertonum)
     trainlean.loc[:, 'Embarked'] = trainlean.loc[:, 'Embarked'].apply(embarknum)
     """ drop nan """
     trainlean = trainlean.dropna(how='any')
-    """ normalize the features and save the normalization parameters """
-    raw_mean = trainlean.mean()
-    raw_std = trainlean.std()
-    for i in range(1, trainlean.shape[1]):
-        trainlean.iloc[:, i] = (trainlean.iloc[:, i] - raw_mean[i]) / raw_std[i]
-        
+  
     m = trainlean.shape[0]
     trainset = trainlean.loc[:int(tp * m), :]
     vadset = trainlean.loc[int(vstart * m):, :]
     
-    return {'train':trainset, 'validation':vadset, 'rawmean':raw_mean, \
-            'rawspan':raw_std}
+    return {'train':trainset, 'validation':vadset}
+
+def normdata(a):
+    raw_mean = a.mean(axis = 0)
+    raw_std = a.std(axis = 0)
+    out = a
+    for i in range(0, a.shape[1]):
+        out[:, i] = (a[:, i] - raw_mean[i]) / raw_std[i]
+    return out
+    
+def xquad(X):
+    m, nf = X.shape
+    Xquad = np.zeros(shape = (m, nf * (nf + 1)))
+    Xquad[:, 0 : nf] = X
+    for i in range(1, nf + 1):
+        Xquad[:, i * nf : (i+1) * nf] = X * np.dot(X[:, i - 1].reshape(m, 1), \
+              np.ones(shape = (1, nf)))
+    return Xquad    
 
 def gendertonum(g):
     if g == 'male':
         return 0.5
     else:
-        return -0.5
+        return 1
     
 def embarknum(e):
     if e == 'S':
