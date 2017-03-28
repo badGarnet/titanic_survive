@@ -9,11 +9,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def readdata(fname, tp, vstart):
+def readdata(fname, tp, vstart, features):
     train = pd.read_csv(fname)
     """ only use a small subset of features for now"""
-    trainlean = train.loc[:, ['Survived', 'Pclass', 'Age', 'Sex', 'SibSp', \
-                       'Parch', 'Fare','Embarked']]
+    trainlean = train.loc[:, features]
     """ digitize string values """
     trainlean.loc[:, 'Sex'] = trainlean.loc[:, 'Sex'].apply(gendertonum)
     trainlean.loc[:, 'Embarked'] = trainlean.loc[:, 'Embarked'].apply(embarknum)
@@ -27,10 +26,10 @@ def readdata(fname, tp, vstart):
     return {'train':trainset, 'validation':vadset}
 
 def normdata(a):
-    raw_mean = a.mean()
-    raw_std = a.std()
+    raw_mean = a.mean(axis = 0)
+    raw_std = a.std(axis = 0)
     out = a
-    for i in range(1, a.shape[1]):
+    for i in range(0, a.shape[1]):
         out[:, i] = (a[:, i] - raw_mean[i]) / raw_std[i]
     return out
     
@@ -46,7 +45,7 @@ def gendertonum(g):
     if g == 'male':
         return 0.5
     else:
-        return -0.5
+        return 1
     
 def embarknum(e):
     if e == 'S':
