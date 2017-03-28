@@ -35,9 +35,10 @@ def normdata(a):
     
 def xquad(X):
     m, nf = X.shape
-    Xquad = np.zeros(shape = (m, nf**2))
-    for i in range(0, nf):
-        Xquad[:, i * nf : (i+1) * nf] = X * np.dot(X[:, i].reshape(m, 1), \
+    Xquad = np.zeros(shape = (m, nf * (nf + 1)))
+    Xquad[:, 0 : nf] = X
+    for i in range(1, nf + 1):
+        Xquad[:, i * nf : (i+1) * nf] = X * np.dot(X[:, i - 1].reshape(m, 1), \
               np.ones(shape = (1, nf)))
     return Xquad    
 
