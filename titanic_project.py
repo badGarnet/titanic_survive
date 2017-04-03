@@ -8,6 +8,7 @@ Created on Sat Mar 25 09:18:48 2017
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.optimize as scop
 
 def readdata(fname, tp, vstart, features):
     train = pd.read_csv(fname)
@@ -32,6 +33,25 @@ def readdata(fname, tp, vstart, features):
     vadset = trainlean.loc[int(vstart * m):, :]
     
     return {'train':trainset, 'validation':vadset}
+
+def regerrors(regpara, X, y, Xvad, yvad):
+    """ run the model for a set of regularization parameters and return the
+    training and validaton set errors """
+    trainerror = np.zeros(shape = (regpara.size, 1))
+    vaderror = np.zeros(shape = (regpara.size, 1))
+    theta0 = np.zeros(shape = (X.shape[0], 1))
+
+    for i in range(0, regpara.size):
+        theta = scop.fmin_l_bfgs_b(lfCost, theta0, lfGradient, (X, y, regpara[i]))[0]
+        trainerror[i] = lfCost(theta, X, y, regpara[i])
+        vaderror[i] = lfCost(theta, Xvad, yvad, regpara[i])
+    plt.semilogx(regpara, trainerror, '-b', regpara, vaderror,'-r')
+    plt.xlabel('regularization parameter value')
+    plt.ylabel('error')
+    plt.legend(['training','validation'])
+    plt.show()
+    
+    return {'trainerror': trainerror, 'vaderror': vaderror}
 
 def name2title(name):
     return name.split(',')[1].split('.')[0]
