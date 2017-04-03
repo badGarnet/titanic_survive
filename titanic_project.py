@@ -25,22 +25,29 @@ def readdata(fname, tp, vstart, features):
     
     return {'train':trainset, 'validation':vadset}
 
+def name2title(name):
+    return name.split(',')[1].split('.')[0]
+
 def normdata(a):
     raw_mean = a.mean(axis = 0)
     raw_std = a.std(axis = 0)
     out = a
     for i in range(0, a.shape[1]):
-        out[:, i] = (a[:, i] - raw_mean[i]) / raw_std[i]
+        if raw_std[i] == 0:
+            out[:, i] = (a[:, i] + 1.0) / (raw_mean[i] + 1.0)
+        else:
+            out[:, i] = (a[:, i] - raw_mean[i]) / raw_std[i]
     return out
     
 def xquad(X):
     m, nf = X.shape
-    Xquad = np.zeros(shape = (m, nf * (nf + 1) / 2))
+    Xquad = np.zeros(shape = (m, nf + nf * (nf + 1) / 2))
     Xquad[:, 0 : nf] = X
-    for i in range(1, nf + 1):
-        Xquad[:, i * nf : (i+1) * nf + 1 - i] = X[:, i - 1 : nf] * \
+    quadind = np.insert(np.arange(nf,0,-1), 0, nf).cumsum()
+    for i in range(1, nf+1):
+        Xquad[:, quadind[i-1] : quadind[i]] = X[:, i - 1 : nf] * \
               np.dot(X[:, i - 1].reshape(m, 1), \
-              np.ones(shape = (1, nf + 1 - i)))
+              np.float64(np.ones(shape = (1, nf + 1 - i))))
     return Xquad    
 
 def gendertonum(g):
