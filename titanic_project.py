@@ -35,11 +35,12 @@ def normdata(a):
     
 def xquad(X):
     m, nf = X.shape
-    Xquad = np.zeros(shape = (m, nf * (nf + 1)))
+    Xquad = np.zeros(shape = (m, nf * (nf + 1) / 2))
     Xquad[:, 0 : nf] = X
     for i in range(1, nf + 1):
-        Xquad[:, i * nf : (i+1) * nf] = X * np.dot(X[:, i - 1].reshape(m, 1), \
-              np.ones(shape = (1, nf)))
+        Xquad[:, i * nf : (i+1) * nf + 1 - i] = X[:, i - 1 : nf] * \
+              np.dot(X[:, i - 1].reshape(m, 1), \
+              np.ones(shape = (1, nf + 1 - i)))
     return Xquad    
 
 def gendertonum(g):
