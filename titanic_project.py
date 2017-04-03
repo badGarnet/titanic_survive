@@ -16,8 +16,16 @@ def readdata(fname, tp, vstart, features):
     """ digitize string values """
     trainlean.loc[:, 'Sex'] = trainlean.loc[:, 'Sex'].apply(gendertonum)
     trainlean.loc[:, 'Embarked'] = trainlean.loc[:, 'Embarked'].apply(embarknum)
-    """ drop nan """
+    
+    """ extract titles and map titles to age for those missing age in db"""
+    tmap = {' Mr':0, ' Mrs':1, ' Miss':2, ' Mme':1, ' Master':3}
+    title = trainlean.Name.apply(name2title).map(tmap).fillna(4).astype(int)
+    medage = trainlean.groupby(title)['Age'].median()
+    trainlean.loc[trainlean.Age.isnull(), 'Age'] = \
+                  title[trainlean['Age'].isnull()].map(medage)
+    """ drop nan
     trainlean = trainlean.dropna(how='any')
+    """
   
     m = trainlean.shape[0]
     trainset = trainlean.loc[:int(tp * m), :]
@@ -28,6 +36,13 @@ def readdata(fname, tp, vstart, features):
 def name2title(name):
     return name.split(',')[1].split('.')[0]
 
+def getacu(theta, X, y):
+    y_predict = sigmoid(np.dot(X, theta))
+    y_predict[y_predict > 0.5] = 1
+    y_predict[y_predict <= 0.5] = 0
+    return (y_predict == y).sum()*1.0/y.size
+    
+    
 def normdata(a):
     raw_mean = a.mean(axis = 0)
     raw_std = a.std(axis = 0)
