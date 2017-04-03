@@ -53,6 +53,14 @@ def regerrors(regpara, X, y, Xvad, yvad):
     
     return {'trainerror': trainerror, 'vaderror': vaderror}
 
+def polyx(X, order):
+    m, nf = X.shape
+    Xp = np.zeros(shape = (m, nf * order))
+    Xp[:, 0 : nf] = np.copy(X)
+    for i in range (1, order):
+        Xp[:, i * nf:(i + 1) * nf] = X ** (i + 1)
+    return Xp
+
 def name2title(name):
     return name.split(',')[1].split('.')[0]
 
@@ -66,7 +74,7 @@ def getacu(theta, X, y):
 def normdata(a):
     raw_mean = a.mean(axis = 0)
     raw_std = a.std(axis = 0)
-    out = a
+    out = np.copy(a)
     for i in range(0, a.shape[1]):
         if raw_std[i] == 0:
             out[:, i] = (a[:, i] + 1.0) / (raw_mean[i] + 1.0)
@@ -77,7 +85,7 @@ def normdata(a):
 def xquad(X):
     m, nf = X.shape
     Xquad = np.zeros(shape = (m, nf + nf * (nf + 1) / 2))
-    Xquad[:, 0 : nf] = X
+    Xquad[:, 0 : nf] = np.copy(X)
     quadind = np.insert(np.arange(nf,0,-1), 0, nf).cumsum()
     for i in range(1, nf+1):
         Xquad[:, quadind[i-1] : quadind[i]] = X[:, i - 1 : nf] * \
@@ -87,7 +95,7 @@ def xquad(X):
 
 def gendertonum(g):
     if g == 'male':
-        return 0.5
+        return -1
     else:
         return 1
     
