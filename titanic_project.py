@@ -18,15 +18,18 @@ def readdata(fname, tp, vstart, features):
     trainlean.loc[:, 'Sex'] = trainlean.loc[:, 'Sex'].apply(gendertonum)
     trainlean.loc[:, 'Embarked'] = trainlean.loc[:, 'Embarked'].apply(embarknum)
     
-    """ extract titles and map titles to age for those missing age in db"""
+    """ extract titles and map titles to age for those missing age in db
     tmap = {' Mr':0, ' Mrs':1, ' Miss':2, ' Mme':1, ' Master':3}
     title = trainlean.Name.apply(name2title).map(tmap).fillna(4).astype(int)
     medage = trainlean.groupby(title)['Age'].median()
     trainlean.loc[trainlean.Age.isnull(), 'Age'] = \
                   title[trainlean['Age'].isnull()].map(medage)
+    """
+    
     """ drop nan
     trainlean = trainlean.dropna(how='any')
     """
+    
   
     m = trainlean.shape[0]
     trainset = trainlean.loc[:int(tp * m), :]
