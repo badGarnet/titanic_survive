@@ -30,8 +30,7 @@ def readdata(fname, tp, vstart, features):
     
     """ drop nan
     trainlean = trainlean.dropna(how='any')
-    """
-    
+    """   
   
     m = trainlean.shape[0]
     trainset = trainlean.loc[:int(tp * m), :]
@@ -74,7 +73,6 @@ def getacu(theta, X, y):
     y_predict[y_predict > 0.5] = 1
     y_predict[y_predict <= 0.5] = 0
     return (y_predict == y).sum()*1.0/y.size
-    
     
 def normdata(a):
     raw_mean = a.mean(axis = 0)
