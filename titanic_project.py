@@ -24,6 +24,8 @@ def readdata(fname, tp, vstart, features):
     medage = trainlean.groupby(title)['Age'].median()
     trainlean.loc[trainlean.Age.isnull(), 'Age'] = \
                   title[trainlean['Age'].isnull()].map(medage)
+    trainlean = trainlean.assign(title = title.values)
+    del trainlean['Nmae']
     """
     
     """ drop nan
@@ -114,6 +116,15 @@ def embarknum(e):
 
 def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
+
+def lrCost(theta, X, y):
+    """linear regression cost function """
+    m = X.shape[0]
+    return np.dot((np.dot(X, theta) - y).T, np.dot(X, theta) - y) / 2.0 / m
+
+def lrGradient(theta, X, y):
+    """ linear regression gradient """
+    return np.dot(X.T, np.dot(X, theta) - y) / X.shape[0]
 
 def lfCost(theta, X, y, regpara):
     """ logistic cost function
